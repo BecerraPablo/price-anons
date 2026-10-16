@@ -1,5 +1,5 @@
 Consultando el portal oficial...
-  intento 1/2 falló: curl: (28) Failed to connect to datos.produccion.gob.ar port 443 after 15002 ms: Timeout was reached
+  intento 1/2 falló: curl: (28) Failed to connect to datos.produccion.gob.ar port 443 after 15001 ms: Timeout was reached
   intento 2/2 falló: curl: (28) Failed to connect to datos.produccion.gob.ar port 443 after 15003 ms: Timeout was reached
   el portal oficial no responde (curl: (28) Failed to connect to datos.produccion.gob.ar port 443 after 15003 ms: Timeout was reached); uso el espejo
 Espejo: 2026-10-15  d076720f-a7f0-4af8-b1d6-1b99d5a90c14-revID-719c024d-ff0f-4efe-8e22-b378d764c1a0-sepa_jueves.zip-repackaged.tar.zst
@@ -11,5 +11,20 @@ Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/d076720f-a
   sucursales encontradas: 1
   productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1010735
   productos de la sucursal: 5838  descartados: 44
-  historial: 5838 cambios de precio registrados
+  historial: 0 cambios de precio registrados
 OK: 5838 productos guardados (2026-10-15)
+
+Productos: 5838 · con foto guardada: 0 · a buscar hoy: 5838
+  500/5838 · encontradas 391
+  1000/5838 · encontradas 883
+  1500/5838 · encontradas 1377
+  2000/5838 · encontradas 1867
+  2500/5838 · encontradas 2362
+  3000/5838 · encontradas 2849
+  3500/5838 · encontradas 3326
+  4000/5838 · encontradas 3806
+  4500/5838 · encontradas 4242
+  5000/5838 · encontradas 4664
+  5500/5838 · encontradas 4874
+Encontradas hoy: 5131 de 5838 (292 s, 728 errores de red)
+Cobertura total: 5131 de 5838 (88%)
