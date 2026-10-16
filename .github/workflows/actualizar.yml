@@ -35,6 +35,15 @@ jobs:
           set -o pipefail
           python scripts/actualizar.py 2>&1 | tee docs/data/ultimo-log.txt
 
+      - name: Buscar fotos de productos
+        continue-on-error: true
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -o pipefail
+          echo "" >> docs/data/ultimo-log.txt
+          python scripts/imagenes.py 2>&1 | tee -a docs/data/ultimo-log.txt
+
       - name: Guardar cambios
         if: always()
         run: |

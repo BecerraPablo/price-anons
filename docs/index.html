@@ -132,28 +132,19 @@ const fold = t => norm(t).replace(/([a-z])\1+/g,'$1').replace(/muz/g,'moz').repl
 const esc = t => String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PH = '<svg class="ph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>';
 
-/* ---------- imágenes por EAN ---------- */
-const IMG_PC = e => `https://imagenes.preciosclaros.gob.ar/productos/${e}.jpg`;
-const offCache = (()=>{try{return JSON.parse(localStorage.getItem('offImg')||'{}')}catch{return {}}})();
-function saveOff(){try{localStorage.setItem('offImg',JSON.stringify(offCache))}catch{}}
-async function offImage(ean){
-  if(ean in offCache) return offCache[ean];
-  let url = '';
-  try{
-    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${ean}?fields=image_front_small_url`);
-    if(r.ok){const j = await r.json(); url = j?.product?.image_front_small_url || ''}
-  }catch{}
-  offCache[ean] = url; saveOff(); return url;
+/* ---------- imágenes por EAN (enlaces que busca el script diario) ---------- */
+let IMGS = null;
+const loadImgs = fetch('data/imagenes.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(j=>{IMGS=j}).catch(()=>{});
+function imgURL(ean){
+  if(!IMGS) return `https://imagenes.preciosclaros.gob.ar/productos/${ean}.jpg`;
+  const v = IMGS.i?.[ean];
+  return v ? IMGS.p[v[0]] + v[1] : '';
 }
 function imgHTML(ean){
-  return `<img loading="lazy" alt="" src="${IMG_PC(ean)}" data-ean="${ean}" onerror="imgFail(this)">`;
+  const url = imgURL(ean);
+  return url ? `<img loading="lazy" alt="" src="${esc(url)}" onerror="imgFail(this)">` : PH;
 }
-window.imgFail = async function(img){
-  img.onerror = null;
-  const url = await offImage(img.dataset.ean);
-  if(url){ img.onerror = ()=>{img.replaceWith(phNode())}; img.src = url; }
-  else img.replaceWith(phNode());
-};
+window.imgFail = img => img.replaceWith(phNode());
 function phNode(){const d=document.createElement('span');d.innerHTML=PH;return d.firstChild}
 
 /* ---------- datos ---------- */
@@ -162,6 +153,7 @@ async function load(){
     const r = await fetch('data/productos.json',{cache:'no-cache'});
     if(!r.ok) throw new Error(r.status);
     DATA = await r.json();
+    await loadImgs;
   }catch(e){
     $('#meta').textContent = 'Sin datos';
     showEmpty('Todavía no hay datos',
