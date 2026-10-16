@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Price Anon</title>
+<meta name="theme-color" content="#1f6b3a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: barra de búsqueda fija arriba, grilla de tarjetas tipo etiqueta de góndola, ficha en hoja inferior */
+:root{
+  --bg:#eef1ed; --fg:#16201a; --muted:#5b6a60; --card:#ffffff; --line:#d3dcd5;
+  --accent:#1f6b3a; --accent-fg:#ffffff; --tag:#ffe45c; --tag-fg:#1b1a12; --promo:#b3261e;
+  --display:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#101612; --fg:#e4ebe6; --muted:#93a399; --card:#19211c; --line:#2b3730;
+  --accent:#6fcf8f; --accent-fg:#0d1a12; --tag:#e8cf45; --tag-fg:#17160c; --promo:#ff8a80;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--display);font-size:15px;line-height:1.4;
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top,0px)}
+header .wrap{display:flex;flex-direction:column;gap:10px;padding-block:14px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
+.meta{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.search{position:relative}
+.search input{width:100%;font:inherit;font-size:1.05rem;padding:12px 40px 12px 14px;border-radius:10px;
+  border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.search button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;
+  color:var(--muted);font-size:1.3rem;cursor:pointer;padding:6px 8px;line-height:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--card);color:var(--fg);
+  padding:5px 10px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+
+main .wrap{padding-block:16px 40px;display:flex;flex-direction:column;gap:14px}
+.count{font-size:.8rem;color:var(--muted);font-family:var(--mono)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.card{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card .img{aspect-ratio:1;background:#fff;display:flex;align-items:center;justify-content:center;padding:10px}
+.card img{max-width:100%;max-height:100%;object-fit:contain}
+.card .body{padding:8px 10px 10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.card .desc{font-size:.85rem;font-weight:600;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card .sub{font-size:.75rem;color:var(--muted)}
+.price{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.card .price{margin-top:auto;align-self:flex-start;background:var(--tag);color:var(--tag-fg);padding:2px 8px;border-radius:4px;font-size:1rem}
+.card .promo{font-size:.7rem;color:var(--promo);font-weight:600}
+.ph{width:56%;height:56%;color:#b9c4bc}
+.more{align-self:center;font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:10px 18px;border-radius:8px;cursor:pointer}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.empty h2{margin:0;font-size:1.05rem}
+.empty p{margin:0;color:var(--muted)}
+
+dialog{border:0;padding:0;background:var(--card);color:var(--fg);width:min(560px,100%);max-height:92vh;
+  border-radius:16px 16px 0 0;margin:auto auto 0;overflow:auto}
+@media (min-width:640px){dialog{border-radius:16px;margin:auto}}
+dialog::backdrop{background:rgba(10,16,12,.55)}
+.sheet{display:flex;flex-direction:column;gap:14px;padding:18px max(18px,env(safe-area-inset-left,0px)) calc(22px + env(safe-area-inset-bottom,0px))}
+.sheet .head{display:flex;gap:14px;align-items:flex-start}
+.sheet .head .img{width:96px;height:96px;flex:none;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:6px;border:1px solid var(--line)}
+.sheet .head img{max-width:100%;max-height:100%;object-fit:contain}
+.sheet h2{margin:0;font-size:1.05rem;line-height:1.3;text-wrap:balance}
+.sheet .close{margin-left:auto;border:0;background:none;color:var(--muted);font-size:1.5rem;cursor:pointer;line-height:1;padding:2px 6px}
+.bigprice{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bigprice .price{font-size:2rem;background:var(--tag);color:var(--tag-fg);padding:2px 12px;border-radius:6px}
+.bigprice .ref{font-size:.8rem;color:var(--muted);font-family:var(--mono)}
+.promos{display:flex;flex-direction:column;gap:4px}
+.promos div{font-size:.85rem;color:var(--promo);font-weight:600}
+.barcode{background:#fff;border-radius:10px;padding:14px 8px;display:flex;justify-content:center;border:1px solid var(--line)}
+.barcode svg{max-width:100%;height:auto}
+.eanrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.eanrow code{font-family:var(--mono);font-size:1.05rem;letter-spacing:.06em}
+.btn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:7px 12px;border-radius:8px;cursor:pointer}
+.hist h3{margin:0 0 6px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hist svg{width:100%;height:auto;display:block}
+.hist .note{font-size:.75rem;color:var(--muted);font-family:var(--mono)}
+.notfound{font-size:.9rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .12s}.card:active{transform:scale(.98)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1>Price Anon</h1>
+      <span class="meta" id="meta">Cargando datos…</span>
+    </div>
+    <div class="search">
+      <input id="q" type="search" placeholder="Buscá un producto o tipeá el código de barras" autocomplete="off" enterkeyhint="search" aria-label="Buscar producto o código">
+      <button id="clear" aria-label="Borrar búsqueda" hidden>×</button>
+    </div>
+    <div class="chips" id="sucs" hidden></div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="count" id="count"></div>
+    <div class="grid" id="grid"></div>
+    <button class="more" id="more" hidden>Mostrar más</button>
+    <div id="empty" hidden></div>
+  </div>
+</main>
+
+<dialog id="dlg" aria-labelledby="dtitle">
+  <div class="sheet" id="sheet"></div>
+</dialog>
+
+<script src="vendor/JsBarcode.all.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const fmt = new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:2});
+const PAGE = 60;
+let DATA = null, ITEMS = [], HIST = null, results = [], shown = 0, sucActiva = null;
+
+const norm = t => (t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+/* clave de búsqueda tolerante: sin letras dobles, muzza = mozza, v = b, sin h inicial */
+const fold = t => norm(t).replace(/([a-z])\1+/g,'$1').replace(/muz/g,'moz').replace(/v/g,'b').replace(/\bh/g,'');
+const esc = t => String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PH = '<svg class="ph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>';
+
+/* ---------- imágenes por EAN ---------- */
+const IMG_PC = e => `https://imagenes.preciosclaros.gob.ar/productos/${e}.jpg`;
+const offCache = (()=>{try{return JSON.parse(localStorage.getItem('offImg')||'{}')}catch{return {}}})();
+function saveOff(){try{localStorage.setItem('offImg',JSON.stringify(offCache))}catch{}}
+async function offImage(ean){
+  if(ean in offCache) return offCache[ean];
+  let url = '';
+  try{
+    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${ean}?fields=image_front_small_url`);
+    if(r.ok){const j = await r.json(); url = j?.product?.image_front_small_url || ''}
+  }catch{}
+  offCache[ean] = url; saveOff(); return url;
+}
+function imgHTML(ean){
+  return `<img loading="lazy" alt="" src="${IMG_PC(ean)}" data-ean="${ean}" onerror="imgFail(this)">`;
+}
+window.imgFail = async function(img){
+  img.onerror = null;
+  const url = await offImage(img.dataset.ean);
+  if(url){ img.onerror = ()=>{img.replaceWith(phNode())}; img.src = url; }
+  else img.replaceWith(phNode());
+};
+function phNode(){const d=document.createElement('span');d.innerHTML=PH;return d.firstChild}
+
+/* ---------- datos ---------- */
+async function load(){
+  try{
+    const r = await fetch('data/productos.json',{cache:'no-cache'});
+    if(!r.ok) throw new Error(r.status);
+    DATA = await r.json();
+  }catch(e){
+    $('#meta').textContent = 'Sin datos';
+    showEmpty('Todavía no hay datos',
+      'La primera actualización se genera desde GitHub Actions (workflow "Actualizar precios"). Cuando termine, recargá esta página.');
+    return;
+  }
+  ITEMS = DATA.productos.map(p => ({...p, k: fold(`${p.d} ${p.m} ${p.q}`)+' '+p.e}));
+  const f = DATA.fecha ? new Date(DATA.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '';
+  $('#meta').textContent = `Datos SEPA del ${f}`;
+  if(DATA.sucursales?.length>1){
+    sucActiva = DATA.sucursales[0].id;
+    $('#sucs').hidden = false;
+    $('#sucs').innerHTML = DATA.sucursales.map(s=>`<button class="chip" data-s="${esc(s.id)}" aria-pressed="${s.id===sucActiva}">Sucursal ${esc(s.id)}</button>`).join('');
+    $('#sucs').onclick = e=>{const b=e.target.closest('.chip');if(!b)return;sucActiva=b.dataset.s;
+      document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.s===sucActiva));search()};
+  }
+  search();
+  if(location.hash.length>1) openByEan(location.hash.slice(1));
+}
+
+/* ---------- búsqueda ---------- */
+function search(){
+  const raw = $('#q').value.trim();
+  $('#clear').hidden = !raw;
+  const q = norm(raw);
+  const pool = sucActiva ? ITEMS.filter(p=>p.s===sucActiva) : ITEMS;
+  $('#empty').hidden = true;
+  const digits = /^\d+$/.test(q);
+  if(!q) results = pool;
+  else if(digits){
+    results = pool.filter(p=>p.e.includes(q));
+    if(results.length===0 && [8,12,13].includes(q.length)) return showNotFound(q);
+  } else {
+    const toks = fold(q).split(/\s+/).filter(Boolean).map(t=>t.length>3&&t.endsWith('s')?t.slice(0,-1):t);
+    results = pool.filter(p=>toks.every(t=>p.k.includes(t)));
+  }
+  $('#count').textContent = q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} productos`;
+  $('#grid').innerHTML=''; shown=0; more();
+  if(q && results.length===0) showEmpty('Sin resultados','Probá con menos palabras o con la marca.');
+}
+function more(){
+  const slice = results.slice(shown, shown+PAGE);
+  $('#grid').insertAdjacentHTML('beforeend', slice.map(cardHTML).join(''));
+  shown += slice.length;
+  $('#more').hidden = shown>=results.length;
+}
+function cardHTML(p){
+  const promo = p.o?.length ? `<span class="promo">Promo${p.o[0][0]?' '+fmt.format(p.o[0][0]):''}</span>` : '';
+  return `<button class="card" data-e="${p.e}" data-s="${esc(p.s)}">
+    <div class="img">${imgHTML(p.e)}</div>
+    <div class="body">
+      <div class="desc">${esc(p.d)}</div>
+      <div class="sub">${esc([p.m,p.q].filter(Boolean).join(' · '))}</div>
+      ${promo}
+      <span class="price">${fmt.format(p.p)}</span>
+    </div></button>`;
+}
+function showEmpty(t,m){
+  $('#empty').hidden=false;
+  $('#empty').innerHTML=`<div class="empty"><h2>${esc(t)}</h2><p>${esc(m)}</p></div>`;
+}
+function showNotFound(code){
+  $('#count').textContent='';
+  $('#grid').innerHTML=''; $('#more').hidden=true;
+  $('#empty').hidden=false;
+  $('#empty').innerHTML=`<div class="empty"><h2>El código ${esc(code)} no está en la base</h2>
+    <p>Puede que la sucursal no lo informe a SEPA. Igual podés ver el código de barras.</p>
+    <button class="btn" id="showbc">Ver código de barras</button></div>`;
+  $('#showbc').onclick=()=>openDetail({e:code.padStart(13,'0'),d:'Código ingresado a mano',m:'',q:'',p:null});
+}
+
+/* ---------- ficha ---------- */
+function openByEan(code){
+  const c = code.replace(/\D/g,'');
+  const p = ITEMS.find(x=>x.e===c.padStart(13,'0') && (!sucActiva||x.s===sucActiva));
+  if(p) openDetail(p);
+}
+function openDetail(p){
+  const ref = p.r ? `<span class="ref">${fmt.format(p.r[0])} x ${esc(p.r[1]||'')} ${esc(p.r[2]||'')}</span>` : '';
+  const promos = p.o?.length ? `<div class="promos">${p.o.map(o=>`<div>${o[0]?fmt.format(o[0])+' · ':''}${esc(o[1]||'')}</div>`).join('')}</div>` : '';
+  $('#sheet').innerHTML = `
+    <div class="head">
+      <div class="img">${imgHTML(p.e)}</div>
+      <div style="min-width:0;display:flex;flex-direction:column;gap:4px">
+        <h2 id="dtitle">${esc(p.d)}</h2>
+        <div class="sub" style="color:var(--muted);font-size:.85rem">${esc([p.m,p.q].filter(Boolean).join(' · '))}</div>
+      </div>
+      <button class="close" aria-label="Cerrar">×</button>
+    </div>
+    ${p.p!=null?`<div class="bigprice"><span class="price">${fmt.format(p.p)}</span>${ref}</div>`:''}
+    ${promos}
+    <div class="barcode"><svg id="bc"></svg></div>
+    <div class="eanrow"><code>${p.e}</code><button class="btn" id="copy">Copiar código</button></div>
+    ${p.p!=null?'<div class="hist" id="hist"></div>':''}`;
+  try{
+    const isEan13 = p.e.length===13;
+    JsBarcode('#bc', p.e, {format:isEan13?'EAN13':'CODE128',width:2.4,height:110,fontSize:20,background:'#ffffff',lineColor:'#000000',margin:12});
+  }catch{ $('#bc').outerHTML = '<p class="notfound">No se pudo dibujar este código.</p>'; }
+  $('.sheet .close').onclick=()=>$('#dlg').close();
+  $('#copy').onclick=async e=>{
+    try{await navigator.clipboard.writeText(p.e);e.target.textContent='Copiado'}catch{e.target.textContent='No se pudo copiar'}
+  };
+  if(!$('#dlg').open) $('#dlg').showModal();
+  history.replaceState(null,'','#'+p.e);
+  if(p.p!=null) drawHistory(p);
+}
+$('#dlg').addEventListener('close',()=>history.replaceState(null,'',location.pathname));
+$('#dlg').addEventListener('click',e=>{if(e.target===$('#dlg'))$('#dlg').close()});
+
+async function drawHistory(p){
+  const box = $('#hist'); if(!box) return;
+  if(!HIST){
+    try{HIST = await (await fetch('data/historial.json',{cache:'no-cache'})).json()}catch{HIST={}}
+  }
+  const serie = (HIST[`${p.s}-${p.e}`]||[]).slice();
+  if(serie.length<2){
+    box.innerHTML = `<h3>Historial</h3><div class="note">${serie.length?'Sin cambios de precio desde '+serie[0][0]:'Sin historial todavía'}</div>`;
+    return;
+  }
+  // extender hasta hoy con el último precio
+  if(DATA?.fecha && serie[serie.length-1][0]!==DATA.fecha) serie.push([DATA.fecha, serie[serie.length-1][1]]);
+  const W=520,H=150,pl=8,pr=8,pt=14,pb=22;
+  const t = serie.map(s=>new Date(s[0]+'T12:00:00').getTime());
+  const v = serie.map(s=>s[1]);
+  const t0=t[0],t1=t[t.length-1]||t0+1, vmin=Math.min(...v), vmax=Math.max(...v), span=(vmax-vmin)||vmax*0.1||1;
+  const X=x=>pl+(W-pl-pr)*((x-t0)/((t1-t0)||1)), Y=y=>pt+(H-pt-pb)*(1-(y-(vmin-span*.1))/(span*1.2));
+  let d=''; serie.forEach((s,i)=>{const x=X(t[i]),y=Y(v[i]); d+= i? `H${x.toFixed(1)}V${y.toFixed(1)}`:`M${x.toFixed(1)},${y.toFixed(1)}`});
+  const area = d+`V${H-pb}H${X(t0).toFixed(1)}Z`;
+  const lx=X(t[t.length-1]), ly=Y(v[v.length-1]);
+  const fd = s=>new Date(s+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+  const diff = v[v.length-1]-v[0], pct = v[0]?(diff/v[0]*100):0;
+  box.innerHTML = `<h3>Historial</h3>
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolución del precio">
+    <line x1="${pl}" x2="${W-pr}" y1="${H-pb}" y2="${H-pb}" stroke="var(--line)"/>
+    <path d="${area}" fill="var(--accent)" fill-opacity=".12"/>
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+    <circle cx="${lx}" cy="${ly}" r="4" fill="var(--accent)"/>
+    <text x="${pl}" y="${H-6}" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${fd(serie[0][0])}</text>
+    <text x="${W-pr}" y="${H-6}" font-size="11" fill="var(--muted)" text-anchor="end" font-family="IBM Plex Mono,monospace">${fd(serie[serie.length-1][0])}</text>
+  </svg>
+  <div class="note">${fmt.format(v[0])} → ${fmt.format(v[v.length-1])} (${diff>=0?'+':''}${pct.toFixed(1)}%) · ${serie.length-1} cambio${serie.length-1===1?'':'s'}</div>`;
+}
+
+/* ---------- eventos ---------- */
+let tmr;
+$('#q').addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(search,90)});
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter'){
+  const q=$('#q').value.trim();
+  if(/^\d{8,13}$/.test(q)) openByEan(q); else if(results.length===1) openDetail(results[0]);
+}});
+$('#clear').onclick=()=>{$('#q').value='';search();$('#q').focus()};
+$('#more').onclick=more;
+$('#grid').addEventListener('click',e=>{
+  const c=e.target.closest('.card'); if(!c) return;
+  const p=ITEMS.find(x=>x.e===c.dataset.e && x.s===c.dataset.s); if(p) openDetail(p);
+});
+load();
+</script>
+</body>
+</html>
