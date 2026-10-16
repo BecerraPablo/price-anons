@@ -1,0 +1,43 @@
+name: Diagnóstico de sucursales
+
+on:
+  workflow_dispatch:
+    inputs:
+      eans:
+        description: "Códigos a buscar en otras sucursales (separados por coma)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar-precios
+  cancel-in-progress: false
+
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Comparar sucursales
+        env:
+          CADENA: ${{ secrets.CADENA }}
+          LOCALIDAD: ${{ secrets.LOCALIDAD }}
+          EANS: ${{ github.event.inputs.eans }}
+          PYTHONUNBUFFERED: "1"
+        run: python scripts/diagnostico_sucursales.py
+
+      - name: Guardar resultado
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/diagnostico-sucursales.txt
+          git diff --cached --quiet || { git commit -m "Diagnóstico de sucursales"; git pull --rebase -q; git push; }
