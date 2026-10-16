@@ -19,7 +19,6 @@ import time
 import zlib
 import urllib.error
 import urllib.request
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,7 +27,11 @@ RUTA = os.path.join(DATA, "imagenes.json")
 UA = "Mozilla/5.0 (compatible; price-anons/1.0)"
 TIMEOUT = 12
 REFRESCO_DIAS = int(os.environ.get("REFRESCO_DIAS", "15"))
-MAX_BUSQUEDAS = int(os.environ.get("MAX_BUSQUEDAS", "7000"))
+# Ritmo bajo y respetuoso con las tiendas: una consulta por vez, pausa entre
+# consultas, tope diario, y si una tienda pide frenar no se le consulta más ese día.
+MAX_BUSQUEDAS = int(os.environ.get("MAX_BUSQUEDAS", "400"))
+PAUSA = float(os.environ.get("PAUSA", "2.0"))
+FRENADAS = set()  # tiendas que respondieron 429/403 en esta corrida
 HOY = datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d")
 
 VTEX = [
@@ -67,18 +70,36 @@ def foto_pc(ean):
 
 
 def buscar(ean):
-    errores = 0
-    for _, base in VTEX:
+    """Devuelve (ean, url o None, hubo_error). Consulta una tienda por vez con pausa."""
+    error = False
+    for nombre, base in VTEX:
+        if nombre in FRENADAS:
+            error = True  # no se sabe si la tendría: no marcar como "sin foto"
+            continue
         try:
             url = foto_vtex(base, ean)
+            time.sleep(PAUSA)
             if url:
-                return ean, url, errores
+                return ean, url, False
+        except urllib.error.HTTPError as e:
+            time.sleep(PAUSA)
+            if e.code in (403, 429):
+                FRENADAS.add(nombre)
+                print(f"  {nombre} pidió frenar (HTTP {e.code}); no se le consulta más hoy", flush=True)
+            error = True
         except (urllib.error.URLError, TimeoutError, ValueError, OSError):
-            errores += 1
+            time.sleep(PAUSA)
+            error = True
     try:
-        return ean, foto_pc(ean), errores
+        url = foto_pc(ean)
+    except urllib.error.HTTPError as e:
+        url = None  # Precios Claros responde 403/404 cuando no tiene la foto
+        if e.code not in (403, 404):
+            error = True
     except (urllib.error.URLError, TimeoutError, ValueError, OSError):
-        return ean, None, errores + 1
+        url, error = None, True
+    time.sleep(PAUSA)
+    return ean, url, error
 
 
 def partir(url):
@@ -103,6 +124,9 @@ def main():
         with open(RUTA, encoding="utf-8") as f:
             datos = json.load(f)
     prefijos = datos["p"]
+    if datos.get("ultima") == HOY and not os.environ.get("FORZAR"):
+        print("Las fotos ya se buscaron hoy; no se repite.")
+        return
 
     # fotos guardadas sin fecha: se les asigna una escalonada para repartir el refresco
     for e, v in datos["i"].items():
@@ -118,33 +142,37 @@ def main():
           f"a buscar hoy: {len(nuevos)} sin foto + {len(refrescar)} para refrescar", flush=True)
 
     encontrados, cambiadas, errores, t0 = 0, 0, 0, time.time()
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        for n, (ean, url, err) in enumerate(ex.map(buscar, pendientes), 1):
-            errores += err
-            previa = datos["i"].get(ean)
-            if url:
-                pre, resto = partir(url)
-                if pre not in prefijos:
-                    prefijos.append(pre)
-                nueva = [prefijos.index(pre), resto, HOY]
-                if previa and previa[:2] != nueva[:2]:
-                    cambiadas += 1
-                datos["i"][ean] = nueva
-                datos["f"].pop(ean, None)
-                encontrados += 1
-            elif err:
-                pass  # error de red: se reintenta en la próxima corrida
-            elif previa:
-                previa[2] = HOY  # ya no figura en las fuentes: se conserva la foto anterior
-            else:
-                datos["f"][ean] = HOY
-            if n % 500 == 0:
-                print(f"  {n}/{len(pendientes)} · encontradas {encontrados}", flush=True)
+    for n, e in enumerate(pendientes, 1):
+        if len(FRENADAS) == len(VTEX):
+            print("  Todas las tiendas pidieron frenar: se corta la búsqueda por hoy.", flush=True)
+            break
+        ean, url, err = buscar(e)
+        errores += err
+        previa = datos["i"].get(ean)
+        if url:
+            pre, resto = partir(url)
+            if pre not in prefijos:
+                prefijos.append(pre)
+            nueva = [prefijos.index(pre), resto, HOY]
+            if previa and previa[:2] != nueva[:2]:
+                cambiadas += 1
+            datos["i"][ean] = nueva
+            datos["f"].pop(ean, None)
+            encontrados += 1
+        elif err:
+            pass  # error de red: se reintenta en la próxima corrida
+        elif previa:
+            previa[2] = HOY  # ya no figura en las fuentes: se conserva la foto anterior
+        else:
+            datos["f"][ean] = HOY
+        if n % 100 == 0:
+            print(f"  {n}/{len(pendientes)} · encontradas {encontrados}", flush=True)
 
     # no guardar productos que ya no están en la sucursal
     vigentes = set(eans)
     datos["i"] = {e: v for e, v in datos["i"].items() if e in vigentes}
     datos["f"] = {e: v for e, v in datos["f"].items() if e in vigentes}
+    datos["ultima"] = HOY
     with open(RUTA, "w", encoding="utf-8") as f:
         json.dump(datos, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
