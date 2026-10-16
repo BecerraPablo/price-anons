@@ -99,7 +99,7 @@ dialog::backdrop{background:rgba(10,16,12,.55)}
       <span class="meta" id="meta">Cargando datos…</span>
     </div>
     <div class="search">
-      <input id="q" type="search" placeholder="Buscá un producto o tipeá el código de barras" autocomplete="off" enterkeyhint="search" aria-label="Buscar producto o código">
+      <input id="q" type="search" placeholder="Producto, código de barras o $monto" autocomplete="off" enterkeyhint="search" aria-label="Buscar producto o código">
       <button id="clear" aria-label="Borrar búsqueda" hidden>×</button>
     </div>
     <div class="chips" id="sucs" hidden></div>
@@ -181,22 +181,34 @@ async function load(){
 function search(){
   const raw = $('#q').value.trim();
   $('#clear').hidden = !raw;
-  const q = norm(raw);
   const pool = sucActiva ? ITEMS.filter(p=>p.s===sucActiva) : ITEMS;
   $('#empty').hidden = true;
+  window.scrollTo({top:0});
+
+  /* "$300" = todo lo que vale hasta ese monto, del más caro al más barato */
+  const m = raw.match(/\$\s*([\d.,]+)/);
+  const tope = m ? parseFloat(m[1].replace(/\./g,'').replace(',','.')) : null;
+  const q = norm(m ? raw.replace(m[0],' ').trim() : raw);
+
   const digits = /^\d+$/.test(q);
   if(!q) results = pool;
-  else if(digits){
+  else if(digits && tope==null){
     results = pool.filter(p=>p.e.includes(q));
     if(results.length===0 && [8,12,13].includes(q.length)) return showNotFound(q);
   } else {
     const toks = fold(q).split(/\s+/).filter(Boolean).map(t=>t.length>3&&t.endsWith('s')?t.slice(0,-1):t);
     results = pool.filter(p=>toks.every(t=>p.k.includes(t)));
   }
-  $('#count').textContent = q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} productos`;
-  results = ordenar(results);
+
+  if(tope!=null && !isNaN(tope)){
+    results = results.filter(p=>p.p<=tope).sort((a,b)=>b.p-a.p);
+    $('#count').textContent = `${results.length} producto${results.length===1?'':'s'} hasta ${fmt.format(tope)}`;
+  } else {
+    $('#count').textContent = q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} productos`;
+    results = ordenar(results);
+  }
   $('#grid').innerHTML=''; shown=0; more();
-  if(q && results.length===0) showEmpty('Sin resultados','Probá con menos palabras o con la marca.');
+  if(raw && results.length===0) showEmpty('Sin resultados', tope!=null ? 'No hay productos hasta ese monto con esas palabras.' : 'Probá con menos palabras o con la marca.');
 }
 /* de menor a mayor precio, con las presentaciones del mismo producto juntas */
 function ordenar(lista){
