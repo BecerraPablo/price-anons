@@ -1,7 +1,7 @@
 Consultando el portal oficial...
-  intento 1/2 falló: curl: (28) Failed to connect to datos.produccion.gob.ar port 443 after 15001 ms: Timeout was reached
-  intento 2/2 falló: curl: (28) Failed to connect to datos.produccion.gob.ar port 443 after 15003 ms: Timeout was reached
-  el portal oficial no responde (curl: (28) Failed to connect to datos.produccion.gob.ar port 443 after 15003 ms: Timeout was reached); uso el espejo
+  intento 1/2 falló: curl: (22) The requested URL returned error: 403
+  intento 2/2 falló: curl: (22) The requested URL returned error: 403
+  el portal oficial no responde (curl: (22) The requested URL returned error: 403); uso el espejo
 Espejo: 2026-10-15  d076720f-a7f0-4af8-b1d6-1b99d5a90c14-revID-719c024d-ff0f-4efe-8e22-b378d764c1a0-sepa_jueves.zip-repackaged.tar.zst
 Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/d076720f-a7f0-4af8-b1d6-1b99d5a90c14-revID-719c024d-ff0f-4efe-8e22-b378d764c1a0-sepa_jueves.zip-repackaged.tar.zst
   listo: 62 MB
@@ -14,17 +14,7 @@ Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/d076720f-a
   historial: 0 cambios de precio registrados
 OK: 5838 productos guardados (2026-10-15)
 
-Productos: 5838 · con foto guardada: 0 · a buscar hoy: 5838
-  500/5838 · encontradas 391
-  1000/5838 · encontradas 883
-  1500/5838 · encontradas 1377
-  2000/5838 · encontradas 1867
-  2500/5838 · encontradas 2362
-  3000/5838 · encontradas 2849
-  3500/5838 · encontradas 3326
-  4000/5838 · encontradas 3806
-  4500/5838 · encontradas 4242
-  5000/5838 · encontradas 4664
-  5500/5838 · encontradas 4874
-Encontradas hoy: 5131 de 5838 (292 s, 728 errores de red)
+Productos: 5838 · con foto: 5131 · a buscar hoy: 707 sin foto + 0 para refrescar
+  500/707 · encontradas 0
+Hoy: 0 encontradas de 707 búsquedas, 0 fotos cambiaron (38 s, 707 errores de red)
 Cobertura total: 5131 de 5838 (88%)
