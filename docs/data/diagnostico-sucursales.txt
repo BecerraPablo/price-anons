@@ -1,0 +1,24 @@
+Diagnóstico de sucursales · datos del 2026-10-15
+Sucursales de la cadena con coordenadas: 184
+Productos con EAN válido en la sucursal propia: 5882
+
+Sucursales más cercanas (km · productos · productos que la propia no tiene):
+      92 km ·  4752 ·   334
+     117 km ·  7086 ·  1625
+     138 km ·  7485 ·  2022
+     162 km ·  4751 ·   392
+     169 km ·  5298 ·   564
+     169 km ·  4748 ·   420
+     171 km ·  7104 ·  1522
+     172 km ·  4590 ·   380
+
+Productos extra que aportaría sumar sucursales dentro de cada radio:
+  hasta  30 km:   0 sucursales ·     0 productos extra
+  hasta  60 km:   0 sucursales ·     0 productos extra
+  hasta 100 km:   1 sucursales ·   334 productos extra
+  hasta 150 km:   3 sucursales ·  2256 productos extra
+  hasta 250 km:  23 sucursales ·  2649 productos extra
+
+Código 7798142880019:
+  en la sucursal propia: no
+  no figura en ninguna sucursal de la cadena
