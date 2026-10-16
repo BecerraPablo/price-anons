@@ -1,0 +1,23 @@
+Diagnóstico de imágenes · muestra de 300 productos de 5838
+
+fuente           con foto   errores  segundos  último error
+preciosclaros        26%       223         7  HTTPError: 403
+openfoodfacts         1%       295        19  HTTPError: 429
+carrefour            77%         0         7  
+jumbo                76%         0        13  
+vea                  76%         0        10  
+disco                76%         0        10  
+dia                  26%         0         4  
+changomas            64%         4         6  HTTPError: 500
+
+Cobertura acumulada (sumando fuentes de mayor a menor):
+  + carrefour         77%
+  + jumbo             83%
+  + vea               83%
+  + disco             83%
+  + changomas         85%
+  + preciosclaros     86%
+  + dia               86%
+  + openfoodfacts     86%
+
+Sin foto en ninguna fuente: 42 de 300
