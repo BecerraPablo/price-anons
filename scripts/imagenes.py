@@ -112,8 +112,9 @@ def main():
                 datos["i"][ean] = [prefijos.index(pre), resto]
                 datos["f"].pop(ean, None)
                 encontrados += 1
-            else:
-                datos["f"][ean] = HOY
+            elif err == 0:
+                datos["f"][ean] = HOY  # sin foto en ninguna fuente: reintentar en REINTENTO_DIAS
+            # si hubo errores de red no se marca: se reintenta en la próxima corrida
             if n % 500 == 0:
                 print(f"  {n}/{len(pendientes)} · encontradas {encontrados}", flush=True)
 
