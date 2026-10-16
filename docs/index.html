@@ -160,7 +160,10 @@ async function load(){
       'La primera actualización se genera desde GitHub Actions (workflow "Actualizar precios"). Cuando termine, recargá esta página.');
     return;
   }
-  ITEMS = DATA.productos.map(p => ({...p, k: fold(`${p.d} ${p.m} ${p.q}`)+' '+p.e}));
+  ITEMS = DATA.productos.map(p => ({...p,
+    k: fold(`${p.d} ${p.m} ${p.q}`)+' '+p.e,
+    /* mismo producto en otra presentación: descripción sin la cantidad final ("…, 500 gr") */
+    g: fold(p.d.replace(/,\s*[\d.,]+\s*[a-z0-9]+\.?\s*$/i,''))}));
   const f = DATA.fecha ? new Date(DATA.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '';
   $('#meta').textContent = `Datos SEPA del ${f}`;
   if(DATA.sucursales?.length>1){
@@ -191,8 +194,18 @@ function search(){
     results = pool.filter(p=>toks.every(t=>p.k.includes(t)));
   }
   $('#count').textContent = q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} productos`;
+  results = ordenar(results);
   $('#grid').innerHTML=''; shown=0; more();
   if(q && results.length===0) showEmpty('Sin resultados','Probá con menos palabras o con la marca.');
+}
+/* de menor a mayor precio, con las presentaciones del mismo producto juntas */
+function ordenar(lista){
+  const grupos = new Map();
+  for(const p of lista){ if(!grupos.has(p.g)) grupos.set(p.g, []); grupos.get(p.g).push(p); }
+  const arr = [...grupos.values()];
+  arr.forEach(g=>g.sort((a,b)=>a.p-b.p));
+  arr.sort((a,b)=>a[0].p-b[0].p || a[0].d.localeCompare(b[0].d));
+  return arr.flat();
 }
 function more(){
   const slice = results.slice(shown, shown+PAGE);
