@@ -42,8 +42,11 @@ CADENA="..." LOCALIDAD="..." SEPA_ZIP=ruta/al/paquete python scripts/actualizar.
 
 ## Imágenes
 
-SEPA no trae fotos. La página intenta, por EAN, el servidor de imágenes de Precios
-Claros y después Open Food Facts; si no hay ninguna, muestra un ícono.
+SEPA no trae fotos. `scripts/imagenes.py` las busca por EAN en catálogos argentinos
+(Carrefour, Jumbo, Changomás y Precios Claros, en ese orden) y guarda los enlaces en
+`docs/data/imagenes.json`. Cada foto se vuelve a buscar cada 15 días, repartido para
+que cada día se renueve una parte, así los cambios de empaque se reflejan solos.
+Si no hay foto en ninguna fuente, la página muestra un ícono.
 
 ## Aviso
 

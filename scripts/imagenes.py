@@ -2,18 +2,21 @@
 Busca la foto de cada producto por EAN y guarda los enlaces en docs/data/imagenes.json.
 
 Fuentes, en orden: Carrefour, Jumbo, Changomás (catálogos VTEX) y Precios Claros.
-Cada producto se busca una sola vez; los que no se encontraron se reintentan
-pasados REINTENTO_DIAS días.
+Todas las fuentes son catálogos argentinos. Cada foto se vuelve a buscar cada
+REFRESCO_DIAS días (por cambios de empaque); la renovación se reparte para que cada
+día se refresque más o menos la misma cantidad. Los productos sin foto se reintentan
+con la misma frecuencia. Si una búsqueda falla por la red, se reintenta al día siguiente.
 
 Formato de imagenes.json (compacto para que la página cargue rápido):
-  {"p": ["https://.../arquivos/ids/", ...],     prefijos de URL
-   "i": {"<ean>": [indice_prefijo, "resto"]},   foto encontrada
-   "f": {"<ean>": "AAAA-MM-DD"}}                última búsqueda sin éxito
+  {"p": ["https://.../arquivos/ids/", ...],              prefijos de URL
+   "i": {"<ean>": [indice_prefijo, "resto", "fecha"]},   foto y día en que se buscó
+   "f": {"<ean>": "AAAA-MM-DD"}}                         última búsqueda sin éxito
 """
 import json
 import os
 import re
 import time
+import zlib
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -24,7 +27,7 @@ DATA = os.path.join(RAIZ, "docs", "data")
 RUTA = os.path.join(DATA, "imagenes.json")
 UA = "Mozilla/5.0 (compatible; price-anons/1.0)"
 TIMEOUT = 12
-REINTENTO_DIAS = int(os.environ.get("REINTENTO_DIAS", "14"))
+REFRESCO_DIAS = int(os.environ.get("REFRESCO_DIAS", "15"))
 MAX_BUSQUEDAS = int(os.environ.get("MAX_BUSQUEDAS", "7000"))
 HOY = datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d")
 
@@ -87,6 +90,10 @@ def partir(url):
     return "", url
 
 
+def dias_atras(n):
+    return (datetime.strptime(HOY, "%Y-%m-%d") - timedelta(days=n)).strftime("%Y-%m-%d")
+
+
 def main():
     with open(os.path.join(DATA, "productos.json"), encoding="utf-8") as f:
         eans = sorted({p["e"] for p in json.load(f)["productos"]})
@@ -96,25 +103,41 @@ def main():
         with open(RUTA, encoding="utf-8") as f:
             datos = json.load(f)
     prefijos = datos["p"]
-    limite = (datetime.strptime(HOY, "%Y-%m-%d") - timedelta(days=REINTENTO_DIAS)).strftime("%Y-%m-%d")
 
-    pendientes = [e for e in eans if e not in datos["i"] and datos["f"].get(e, "0000") < limite][:MAX_BUSQUEDAS]
-    print(f"Productos: {len(eans)} · con foto guardada: {sum(e in datos['i'] for e in eans)} · a buscar hoy: {len(pendientes)}", flush=True)
+    # fotos guardadas sin fecha: se les asigna una escalonada para repartir el refresco
+    for e, v in datos["i"].items():
+        if len(v) < 3:
+            v.append(dias_atras(zlib.crc32(e.encode()) % REFRESCO_DIAS))
 
-    encontrados, errores, t0 = 0, 0, time.time()
+    vence = dias_atras(REFRESCO_DIAS)
+    nuevos = [e for e in eans if e not in datos["i"] and datos["f"].get(e, "0000") <= vence]
+    refrescar = sorted((e for e in eans if e in datos["i"] and datos["i"][e][2] <= vence),
+                       key=lambda e: datos["i"][e][2])
+    pendientes = (nuevos + refrescar)[:MAX_BUSQUEDAS]
+    print(f"Productos: {len(eans)} · con foto: {sum(e in datos['i'] for e in eans)} · "
+          f"a buscar hoy: {len(nuevos)} sin foto + {len(refrescar)} para refrescar", flush=True)
+
+    encontrados, cambiadas, errores, t0 = 0, 0, 0, time.time()
     with ThreadPoolExecutor(max_workers=6) as ex:
         for n, (ean, url, err) in enumerate(ex.map(buscar, pendientes), 1):
             errores += err
+            previa = datos["i"].get(ean)
             if url:
                 pre, resto = partir(url)
                 if pre not in prefijos:
                     prefijos.append(pre)
-                datos["i"][ean] = [prefijos.index(pre), resto]
+                nueva = [prefijos.index(pre), resto, HOY]
+                if previa and previa[:2] != nueva[:2]:
+                    cambiadas += 1
+                datos["i"][ean] = nueva
                 datos["f"].pop(ean, None)
                 encontrados += 1
-            elif err == 0:
-                datos["f"][ean] = HOY  # sin foto en ninguna fuente: reintentar en REINTENTO_DIAS
-            # si hubo errores de red no se marca: se reintenta en la próxima corrida
+            elif err:
+                pass  # error de red: se reintenta en la próxima corrida
+            elif previa:
+                previa[2] = HOY  # ya no figura en las fuentes: se conserva la foto anterior
+            else:
+                datos["f"][ean] = HOY
             if n % 500 == 0:
                 print(f"  {n}/{len(pendientes)} · encontradas {encontrados}", flush=True)
 
@@ -126,7 +149,8 @@ def main():
         json.dump(datos, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
     con = sum(e in datos["i"] for e in eans)
-    print(f"Encontradas hoy: {encontrados} de {len(pendientes)} ({time.time() - t0:.0f} s, {errores} errores de red)")
+    print(f"Hoy: {encontrados} encontradas de {len(pendientes)} búsquedas, {cambiadas} fotos cambiaron "
+          f"({time.time() - t0:.0f} s, {errores} errores de red)")
     print(f"Cobertura total: {con} de {len(eans)} ({con / max(1, len(eans)):.0%})")
 
 
