@@ -14,10 +14,10 @@ Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/d076720f-a
   historial: 0 cambios de precio registrados
 OK: 5838 productos guardados (2026-10-15)
 
-Productos: 5838 · con foto: 5131 · a buscar hoy: 707 sin foto + 0 para refrescar
+Productos: 5838 · con foto: 5131 · a buscar hoy: 307 sin foto + 339 para refrescar
   100/400 · encontradas 0
   200/400 · encontradas 0
   300/400 · encontradas 0
-  400/400 · encontradas 0
-Hoy: 0 encontradas de 400 búsquedas, 0 fotos cambiaron (3720 s, 0 errores de red)
+  400/400 · encontradas 93
+Hoy: 93 encontradas de 400 búsquedas, 0 fotos cambiaron (3094 s, 2 errores de red)
 Cobertura total: 5131 de 5838 (88%)
