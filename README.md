@@ -7,6 +7,8 @@ Buscador de precios de una sucursal de supermercado, con datos abiertos de
 - Tocá un producto para ver precio, promos, código de barras e historial.
 - Tipeá un código EAN para buscarlo directo; si no está, igual te dibuja el código.
 - Buscá `$1500` para ver todo lo que cuesta hasta ese monto.
+- "% Promos" muestra solo productos en promoción. Cada tarjeta muestra el precio por
+  kg / l / unidad (calculado de la presentación) y "Ordenar por kg / l" ordena por eso.
 - Lista de compras con cantidad, % de descuento y precio editable por producto, % general
   y presupuesto. Favoritos con ★. Se guardan en el navegador; "Pasar a otro dispositivo"
   genera un enlace que los copia a otro celular o PC.

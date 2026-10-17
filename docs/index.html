@@ -41,7 +41,9 @@ h1{margin:0;font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
 .search input:focus{outline:2px solid var(--accent);outline-offset:1px}
 .search button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;
   color:var(--muted);font-size:1.3rem;cursor:pointer;padding:6px 8px;line-height:1}
-.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding-inline:4px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none}
 .chip{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--card);color:var(--fg);
   padding:5px 10px;border-radius:999px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
@@ -59,7 +61,11 @@ main .wrap{padding-block:16px 40px;display:flex;flex-direction:column;gap:14px}
 .card .sub{font-size:.75rem;color:var(--muted)}
 .price{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
 .card .price{margin-top:auto;align-self:flex-start;background:var(--tag);color:var(--tag-fg);padding:2px 8px;border-radius:4px;font-size:1rem}
-.card .promo{font-size:.7rem;color:var(--promo);font-weight:600}
+.card .promo{font-size:.72rem;color:var(--promo);font-weight:600;line-height:1.25}
+.card .unit{font-family:var(--mono);font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+body.orden-unidad .card .unit{color:var(--fg);font-weight:600;font-size:.8rem}
+.card .pie{margin-top:auto;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.card .pie .price{margin-top:0}
 .ph{width:56%;height:56%;color:#b9c4bc}
 .more{align-self:center;font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:10px 18px;border-radius:8px;cursor:pointer}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
@@ -80,7 +86,8 @@ dialog::backdrop{background:rgba(10,16,12,.55)}
 .bigprice .price{font-size:2rem;background:var(--tag);color:var(--tag-fg);padding:2px 12px;border-radius:6px}
 .bigprice .ref{font-size:.8rem;color:var(--muted);font-family:var(--mono)}
 .promos{display:flex;flex-direction:column;gap:4px}
-.promos div{font-size:.85rem;color:var(--promo);font-weight:600}
+.promos div{font-size:.9rem;color:var(--promo);font-weight:600}
+.promos small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
 .barcode{background:#fff;border-radius:10px;padding:14px 8px;display:flex;justify-content:center;border:1px solid var(--line)}
 .barcode svg{max-width:100%;height:auto}
 .eanrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -147,6 +154,8 @@ body.con-barra main .wrap{padding-bottom:96px}
     </div>
     <div class="chips">
       <button class="chip" id="favf" aria-pressed="false">★ Favoritos</button>
+      <button class="chip" id="promof" aria-pressed="false">% Promos</button>
+      <button class="chip" id="ordu" aria-pressed="false">Ordenar por kg / l</button>
       <button class="chip" id="share">Pasar a otro dispositivo</button>
     </div>
     <div class="chips" id="sucs" hidden></div>
@@ -201,7 +210,7 @@ function leer(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??d
 function guardar(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 let FAVS = new Set(leer('pa-favs',[]));
 let LISTA = leer('pa-lista',{items:[],desc:'',presu:''});
-let soloFavs = false, favsCambiaron = false;
+let soloFavs = false, favsCambiaron = false, soloPromos = false, ordenUnidad = false;
 const saveFavs = ()=>guardar('pa-favs',[...FAVS]);
 const saveLista = ()=>{guardar('pa-lista',LISTA);pintarBarra()};
 const byEan = e => ITEMS.find(x=>x.e===e && (!sucActiva||x.s===sucActiva)) || ITEMS.find(x=>x.e===e);
@@ -241,6 +250,31 @@ function agregar(p){
 }
 function quitar(e){ LISTA.items = LISTA.items.filter(i=>i.e!==e && i.id!==e); saveLista(); }
 
+/* ---------- precio por kilo / litro / unidad (calculado de la presentación) ---------- */
+function porUnidad(p){
+  const m = /^([\d.]+)\s*(\S+)$/.exec(p.q||''); if(!m || !p.p) return null;
+  let n = parseFloat(m[1]), u = m[2].toLowerCase();
+  if(!n) return null;
+  // errores comunes de carga: "1500 lt" es 1500 cm3, "500 kgr" son 500 gr
+  if((u==='lt'||u==='l') && n>=50) u='cm3';
+  if((u==='kgr'||u==='kg') && n>=50) u='gr';
+  const t = {gr:[1000,'kg'], kgr:[1,'kg'], kg:[1,'kg'], cm3:[1000,'l'], ml:[1000,'l'], lt:[1,'l'], l:[1,'l'], cu:[1,'u'], un:[1,'u'], m2:[1,'m²']}[u];
+  if(!t) return null;
+  return {v: p.p/(n/t[0]), u: t[1]};
+}
+const fmt0 = new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0});
+const unidadTxt = p => p.pu ? `${fmt0.format(p.pu.v)} / ${p.pu.u}` : '';
+
+/* "30% de descuento ... Hasta el 25/10/2026" -> "−30% · $4.620 · hasta 25/10" */
+function promoCorta(p){
+  if(!p.o?.length) return '';
+  const [pp, ley=''] = p.o[0];
+  const pct = /(\d+)\s*%/.exec(ley), lle = /llevando\s+(\d+)/i.exec(ley), hasta = /hasta el (\d{2}\/\d{2})/i.exec(ley);
+  let t = lle ? `Llevando ${lle[1]}: ${fmt.format(pp)} c/u` : pct ? `−${pct[1]}%: ${fmt.format(pp)}` : (pp ? `Promo ${fmt.format(pp)}` : 'Promo');
+  if(lle && pct) t = `Llevando ${lle[1]} (−${pct[1]}%): ${fmt.format(pp)} c/u`;
+  return t + (hasta ? ` · hasta ${hasta[1]}` : '');
+}
+
 /* ---------- datos ---------- */
 async function load(){
   try{
@@ -254,7 +288,7 @@ async function load(){
       'La primera actualización se genera desde GitHub Actions (workflow "Actualizar precios"). Cuando termine, recargá esta página.');
     return;
   }
-  ITEMS = DATA.productos.map(p => ({...p,
+  ITEMS = DATA.productos.map(p => ({...p, pu: porUnidad(p),
     k: fold(`${p.d} ${p.m} ${p.q}`)+' '+p.e,
     /* mismo producto en otra presentación: descripción sin la cantidad final ("…, 500 gr") */
     g: fold(p.d.replace(/,\s*[\d.,]+\s*[a-z0-9]+\.?\s*$/i,''))}));
@@ -279,6 +313,7 @@ function search(mantenerScroll){
   $('#clear').hidden = !raw;
   let pool = sucActiva ? ITEMS.filter(p=>p.s===sucActiva) : ITEMS;
   if(soloFavs) pool = pool.filter(p=>FAVS.has(p.e));
+  if(soloPromos) pool = pool.filter(p=>p.o?.length);
   $('#empty').hidden = true;
   if(mantenerScroll!==true) window.scrollTo({top:0});
 
@@ -301,11 +336,13 @@ function search(mantenerScroll){
     results = results.filter(p=>p.p<=tope).sort((a,b)=>b.p-a.p);
     $('#count').textContent = `${results.length} producto${results.length===1?'':'s'} hasta ${fmt.format(tope)}`;
   } else {
-    $('#count').textContent = q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} producto${pool.length===1?'':'s'}`;
-    results = ordenar(results);
+    $('#count').textContent = (q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} producto${pool.length===1?'':'s'}`)
+      + (ordenUnidad ? ' · de menor a mayor precio por kg / l / unidad' : '');
+    results = ordenUnidad ? ordenarPorUnidad(results) : ordenar(results);
   }
   $('#grid').innerHTML=''; shown=0; more();
-  if(soloFavs && pool.length===0) showEmpty('Todavía no marcaste favoritos','Abrí un producto y tocá "★ Favorito" para tenerlo a mano acá.');
+  if(soloPromos && pool.length===0) showEmpty('No hay promociones','La sucursal no informa promociones en este momento.');
+  else if(soloFavs && pool.length===0) showEmpty('Todavía no marcaste favoritos','Abrí un producto y tocá "★ Favorito" para tenerlo a mano acá.');
   else if(raw && results.length===0) showEmpty('Sin resultados', tope!=null ? 'No hay productos hasta ese monto con esas palabras.' : 'Probá con menos palabras o con la marca.');
 }
 /* de menor a mayor precio, con las presentaciones del mismo producto juntas */
@@ -317,6 +354,14 @@ function ordenar(lista){
   arr.sort((a,b)=>a[0].p-b[0].p || a[0].d.localeCompare(b[0].d));
   return arr.flat();
 }
+/* por precio de kg / l / unidad; agrupado por tipo de unidad, los sin dato al final */
+function ordenarPorUnidad(lista){
+  const rango = {kg:0, l:1, u:2, 'm²':3};
+  return lista.slice().sort((a,b)=>{
+    if(!a.pu||!b.pu) return (a.pu?0:1)-(b.pu?0:1);
+    return (rango[a.pu.u]-rango[b.pu.u]) || (a.pu.v-b.pu.v);
+  });
+}
 function more(){
   const slice = results.slice(shown, shown+PAGE);
   $('#grid').insertAdjacentHTML('beforeend', slice.map(cardHTML).join(''));
@@ -324,7 +369,8 @@ function more(){
   $('#more').hidden = shown>=results.length;
 }
 function cardHTML(p){
-  const promo = p.o?.length ? `<span class="promo">Promo${p.o[0][0]?' '+fmt.format(p.o[0][0]):''}</span>` : '';
+  const promo = p.o?.length ? `<span class="promo">${esc(promoCorta(p))}</span>` : '';
+  const unit = p.pu ? `<span class="unit">${unidadTxt(p)}</span>` : '';
   const it = enLista(p.e);
   const badges = (FAVS.has(p.e)?'<span class="badge star">★</span>':'') + (it?`<span class="badge">×${esc(it.n)}</span>`:'');
   return `<button class="card${FAVS.has(p.e)?' fav':''}" data-e="${p.e}" data-s="${esc(p.s)}">
@@ -333,8 +379,11 @@ function cardHTML(p){
     <div class="body">
       <div class="desc">${esc(p.d)}</div>
       <div class="sub">${esc([p.m,p.q].filter(Boolean).join(' · '))}</div>
-      ${promo}
-      <span class="price">${fmt.format(p.p)}</span>
+      <div class="pie">
+        ${promo}
+        <span class="price">${fmt.format(p.p)}</span>
+        ${unit}
+      </div>
     </div></button>`;
 }
 function showEmpty(t,m){
@@ -358,8 +407,8 @@ function openByEan(code){
   if(p) openDetail(p);
 }
 function openDetail(p){
-  const ref = p.r ? `<span class="ref">${fmt.format(p.r[0])} x ${esc(p.r[1]||'')} ${esc(p.r[2]||'')}</span>` : '';
-  const promos = p.o?.length ? `<div class="promos">${p.o.map(o=>`<div>${o[0]?fmt.format(o[0])+' · ':''}${esc(o[1]||'')}</div>`).join('')}</div>` : '';
+  const ref = p.pu ? `<span class="ref">${unidadTxt(p)}</span>` : '';
+  const promos = p.o?.length ? `<div class="promos"><div>${esc(promoCorta(p))}<small>${esc(p.o[0][1]||'')}</small></div></div>` : '';
   $('#sheet').innerHTML = `
     <div class="head">
       <div class="img">${imgHTML(p.e)}</div>
@@ -547,6 +596,8 @@ function ofrecerImportar(t){
 /* ---------- eventos ---------- */
 $('#bar').onclick=abrirLista;
 $('#favf').onclick=e=>{soloFavs=!soloFavs;favsCambiaron=false;e.target.setAttribute('aria-pressed',soloFavs);search()};
+$('#promof').onclick=e=>{soloPromos=!soloPromos;e.target.setAttribute('aria-pressed',soloPromos);search()};
+$('#ordu').onclick=e=>{ordenUnidad=!ordenUnidad;e.target.setAttribute('aria-pressed',ordenUnidad);document.body.classList.toggle('orden-unidad',ordenUnidad);search()};
 $('#share').onclick=e=>{compartir(e.target);setTimeout(()=>{e.target.textContent='Pasar a otro dispositivo'},4000)};
 let tmr;
 $('#q').addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(search,90)});
