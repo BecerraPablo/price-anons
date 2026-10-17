@@ -197,7 +197,7 @@ function leer(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??d
 function guardar(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 let FAVS = new Set(leer('pa-favs',[]));
 let LISTA = leer('pa-lista',{items:[],desc:'',presu:''});
-let soloFavs = false;
+let soloFavs = false, favsCambiaron = false;
 const saveFavs = ()=>guardar('pa-favs',[...FAVS]);
 const saveLista = ()=>{guardar('pa-lista',LISTA);pintarBarra()};
 const byEan = e => ITEMS.find(x=>x.e===e && (!sucActiva||x.s===sucActiva)) || ITEMS.find(x=>x.e===e);
@@ -270,13 +270,13 @@ async function load(){
 }
 
 /* ---------- búsqueda ---------- */
-function search(){
+function search(mantenerScroll){
   const raw = $('#q').value.trim();
   $('#clear').hidden = !raw;
   let pool = sucActiva ? ITEMS.filter(p=>p.s===sucActiva) : ITEMS;
   if(soloFavs) pool = pool.filter(p=>FAVS.has(p.e));
   $('#empty').hidden = true;
-  window.scrollTo({top:0});
+  if(mantenerScroll!==true) window.scrollTo({top:0});
 
   /* "$300" = todo lo que vale hasta ese monto, del más caro al más barato */
   const m = raw.match(/\$\s*([\d.,]+)/);
@@ -380,7 +380,7 @@ function openDetail(p){
   }catch{ $('#bc').outerHTML = '<p class="notfound">No se pudo dibujar este código.</p>'; }
   $('.sheet .close').onclick=()=>$('#dlg').close();
   if($('#addl')) $('#addl').onclick=e=>{agregar(p);const it=enLista(p.e);e.target.textContent=`En la lista (×${it.n}) · sumar 1 más`;refrescarTarjeta(p.e)};
-  if($('#fav')) $('#fav').onclick=e=>{FAVS.has(p.e)?FAVS.delete(p.e):FAVS.add(p.e);saveFavs();e.target.setAttribute('aria-pressed',FAVS.has(p.e));refrescarTarjeta(p.e)};
+  if($('#fav')) $('#fav').onclick=e=>{FAVS.has(p.e)?FAVS.delete(p.e):FAVS.add(p.e);saveFavs();favsCambiaron=true;e.target.setAttribute('aria-pressed',FAVS.has(p.e));refrescarTarjeta(p.e)};
   $('#copy').onclick=async e=>{
     try{await navigator.clipboard.writeText(p.e);e.target.textContent='Copiado'}catch{e.target.textContent='No se pudo copiar'}
   };
@@ -388,7 +388,12 @@ function openDetail(p){
   history.replaceState(null,'','#'+p.e);
   if(p.p!=null) drawHistory(p);
 }
-$('#dlg').addEventListener('close',()=>history.replaceState(null,'',location.pathname));
+$('#dlg').addEventListener('close',()=>{
+  history.replaceState(null,'',location.pathname);
+  // viendo solo favoritos: al quitar uno, sacarlo de la grilla sin recargar ni perder la posición
+  if(soloFavs && favsCambiaron) search(true);
+  favsCambiaron = false;
+});
 $('#dlg').addEventListener('click',e=>{if(e.target===$('#dlg'))$('#dlg').close()});
 
 async function drawHistory(p){
@@ -537,7 +542,7 @@ function ofrecerImportar(t){
 
 /* ---------- eventos ---------- */
 $('#bar').onclick=abrirLista;
-$('#favf').onclick=e=>{soloFavs=!soloFavs;e.target.setAttribute('aria-pressed',soloFavs);search()};
+$('#favf').onclick=e=>{soloFavs=!soloFavs;favsCambiaron=false;e.target.setAttribute('aria-pressed',soloFavs);search()};
 $('#share').onclick=e=>{compartir(e.target);setTimeout(()=>{e.target.textContent='Pasar a otro dispositivo'},4000)};
 let tmr;
 $('#q').addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(search,90)});
