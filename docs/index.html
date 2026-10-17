@@ -12,16 +12,18 @@
 /* Layout: barra de búsqueda fija arriba, grilla de tarjetas tipo etiqueta de góndola, ficha en hoja inferior */
 :root{
   --bg:#eef1ed; --fg:#16201a; --muted:#5b6a60; --card:#ffffff; --line:#d3dcd5;
-  --accent:#1f6b3a; --accent-fg:#ffffff; --tag:#ffe45c; --tag-fg:#1b1a12; --promo:#b3261e;
+  --accent:#1f6b3a; --accent-fg:#ffffff; --tag:#ffe45c; --tag-fg:#1b1a12; --promo:#b3261e; --fav:#c99700;
   --display:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#101612; --fg:#e4ebe6; --muted:#93a399; --card:#19211c; --line:#2b3730;
-  --accent:#6fcf8f; --accent-fg:#0d1a12; --tag:#e8cf45; --tag-fg:#17160c; --promo:#ff8a80;
+  --accent:#6fcf8f; --accent-fg:#0d1a12; --tag:#e8cf45; --tag-fg:#17160c; --promo:#ff8a80; --fav:#e8cf45;
   color-scheme:dark}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--display);font-size:15px;line-height:1.4;
   padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -95,6 +97,8 @@ dialog::backdrop{background:rgba(10,16,12,.55)}
 .badges{position:absolute;top:6px;right:6px;display:flex;gap:4px;pointer-events:none}
 .badge{font-family:var(--mono);font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:999px;background:var(--accent);color:var(--accent-fg)}
 .badge.star{background:var(--tag);color:var(--tag-fg)}
+/* favorito: borde dorado más grueso, sin mover el contenido */
+.card.fav{border-color:var(--fav);box-shadow:0 0 0 2px var(--fav)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .btn[aria-pressed="true"]{background:var(--tag);color:var(--tag-fg);border-color:var(--tag)}
@@ -323,7 +327,7 @@ function cardHTML(p){
   const promo = p.o?.length ? `<span class="promo">Promo${p.o[0][0]?' '+fmt.format(p.o[0][0]):''}</span>` : '';
   const it = enLista(p.e);
   const badges = (FAVS.has(p.e)?'<span class="badge star">★</span>':'') + (it?`<span class="badge">×${esc(it.n)}</span>`:'');
-  return `<button class="card" data-e="${p.e}" data-s="${esc(p.s)}">
+  return `<button class="card${FAVS.has(p.e)?' fav':''}" data-e="${p.e}" data-s="${esc(p.s)}">
     <div class="badges">${badges}</div>
     <div class="img">${imgHTML(p.e)}</div>
     <div class="body">
