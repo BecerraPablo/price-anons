@@ -89,6 +89,45 @@ dialog::backdrop{background:rgba(10,16,12,.55)}
 .hist .note{font-size:.75rem;color:var(--muted);font-family:var(--mono)}
 .notfound{font-size:.9rem;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.card{transition:transform .12s}.card:active{transform:scale(.98)}}
+
+/* favoritos y lista */
+.card{position:relative}
+.badges{position:absolute;top:6px;right:6px;display:flex;gap:4px;pointer-events:none}
+.badge{font-family:var(--mono);font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:999px;background:var(--accent);color:var(--accent-fg)}
+.badge.star{background:var(--tag);color:var(--tag-fg)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--tag);color:var(--tag-fg);border-color:var(--tag)}
+body.con-barra main .wrap{padding-bottom:96px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--accent);color:var(--accent-fg);border:0;font:inherit;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar .price{font-size:1.1rem}
+.lista{display:flex;flex-direction:column;gap:10px}
+.li{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.li .nom{font-size:.85rem;font-weight:600;line-height:1.25;min-width:0}
+.li .nom small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
+.li .sub{font-family:var(--mono);font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.li .ctrls{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:2px}
+.fld span{font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fld input{font:inherit;font-family:var(--mono);font-size:.95rem;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%}
+.fld input.edit{border-color:var(--promo)}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.qty button{font:inherit;width:34px;height:34px;border:0;background:var(--bg);color:var(--fg);font-size:1.1rem;cursor:pointer}
+.qty input{width:52px;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:0;text-align:center;padding:7px 2px}
+.w-pct{width:70px}.w-pr{width:120px}
+.rm{margin-left:auto;border:0;background:none;color:var(--muted);font:inherit;font-size:.8rem;cursor:pointer;padding:8px 4px;text-decoration:underline}
+.tot{display:flex;flex-direction:column;gap:6px;padding-top:6px}
+.tot .row{display:flex;justify-content:space-between;gap:10px;align-items:center;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tot .row.big{font-size:1.25rem;font-weight:600}
+.tot .row .fld{flex-direction:row;align-items:center;gap:8px}
+.tot .row .fld input{width:90px}
+.tot .row .fld input#tpresu{width:130px}
+.ok{color:var(--accent)} .mal{color:var(--promo)}
+.manual{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.manual .fld:first-child{flex:1;min-width:140px}
+.aviso{font-size:.8rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -102,6 +141,10 @@ dialog::backdrop{background:rgba(10,16,12,.55)}
       <input id="q" type="search" placeholder="Producto, código de barras o $monto" autocomplete="off" enterkeyhint="search" aria-label="Buscar producto o código">
       <button id="clear" aria-label="Borrar búsqueda" hidden>×</button>
     </div>
+    <div class="chips">
+      <button class="chip" id="favf" aria-pressed="false">★ Favoritos</button>
+      <button class="chip" id="share">Pasar a otro dispositivo</button>
+    </div>
     <div class="chips" id="sucs" hidden></div>
   </div>
 </header>
@@ -114,6 +157,8 @@ dialog::backdrop{background:rgba(10,16,12,.55)}
     <div id="empty" hidden></div>
   </div>
 </main>
+
+<button class="bar" id="bar" hidden></button>
 
 <dialog id="dlg" aria-labelledby="dtitle">
   <div class="sheet" id="sheet"></div>
@@ -147,6 +192,51 @@ function imgHTML(ean){
 window.imgFail = img => img.replaceWith(phNode());
 function phNode(){const d=document.createElement('span');d.innerHTML=PH;return d.firstChild}
 
+/* ---------- favoritos y lista (se guardan en este navegador) ---------- */
+function leer(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def}catch{return def}}
+function guardar(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+let FAVS = new Set(leer('pa-favs',[]));
+let LISTA = leer('pa-lista',{items:[],desc:'',presu:''});
+let soloFavs = false;
+const saveFavs = ()=>guardar('pa-favs',[...FAVS]);
+const saveLista = ()=>{guardar('pa-lista',LISTA);pintarBarra()};
+const byEan = e => ITEMS.find(x=>x.e===e && (!sucActiva||x.s===sucActiva)) || ITEMS.find(x=>x.e===e);
+const num = v => { const n=parseFloat(String(v??'').replace(/\./g,'').replace(',','.')); return isNaN(n)?null:n };
+const enLista = e => LISTA.items.find(i=>i.e===e);
+
+function precioItem(it){
+  const p = it.e ? byEan(it.e) : null;
+  const base = num(it.pr) ?? p?.p ?? it.u ?? 0;
+  return {p, base, editado: num(it.pr)!=null};
+}
+function subtotal(it){
+  const {base} = precioItem(it);
+  const q = num(it.n) ?? 1, d = num(it.d) ?? 0;
+  return base * q * (1 - d/100);
+}
+function totales(){
+  const sub = LISTA.items.reduce((a,it)=>a+subtotal(it),0);
+  const g = num(LISTA.desc) ?? 0;
+  return {sub, total: sub*(1-g/100)};
+}
+function pintarBarra(){
+  const n = LISTA.items.length;
+  $('#bar').hidden = n===0;
+  document.body.classList.toggle('con-barra', n>0);
+  if(!n) return;
+  const {total} = totales();
+  const pr = num(LISTA.presu);
+  const resto = pr!=null ? ` · ${pr-total>=0?'quedan':'te pasás'} ${fmt.format(Math.abs(pr-total))}` : '';
+  $('#bar').innerHTML = `<span>Lista · ${n} producto${n===1?'':'s'}${resto}</span><span class="price">${fmt.format(total)}</span>`;
+}
+function agregar(p){
+  const it = enLista(p.e);
+  if(it) it.n = (num(it.n)??1)+1;
+  else LISTA.items.push({e:p.e, n:1, d:'', pr:'', u:p.p});
+  saveLista();
+}
+function quitar(e){ LISTA.items = LISTA.items.filter(i=>i.e!==e && i.id!==e); saveLista(); }
+
 /* ---------- datos ---------- */
 async function load(){
   try{
@@ -174,14 +264,17 @@ async function load(){
       document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.s===sucActiva));search()};
   }
   search();
-  if(location.hash.length>1) openByEan(location.hash.slice(1));
+  pintarBarra();
+  if(location.hash.startsWith('#s=')) ofrecerImportar(location.hash.slice(3));
+  else if(location.hash.length>1) openByEan(location.hash.slice(1));
 }
 
 /* ---------- búsqueda ---------- */
 function search(){
   const raw = $('#q').value.trim();
   $('#clear').hidden = !raw;
-  const pool = sucActiva ? ITEMS.filter(p=>p.s===sucActiva) : ITEMS;
+  let pool = sucActiva ? ITEMS.filter(p=>p.s===sucActiva) : ITEMS;
+  if(soloFavs) pool = pool.filter(p=>FAVS.has(p.e));
   $('#empty').hidden = true;
   window.scrollTo({top:0});
 
@@ -204,11 +297,12 @@ function search(){
     results = results.filter(p=>p.p<=tope).sort((a,b)=>b.p-a.p);
     $('#count').textContent = `${results.length} producto${results.length===1?'':'s'} hasta ${fmt.format(tope)}`;
   } else {
-    $('#count').textContent = q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} productos`;
+    $('#count').textContent = q ? `${results.length} resultado${results.length===1?'':'s'}` : `${pool.length} producto${pool.length===1?'':'s'}`;
     results = ordenar(results);
   }
   $('#grid').innerHTML=''; shown=0; more();
-  if(raw && results.length===0) showEmpty('Sin resultados', tope!=null ? 'No hay productos hasta ese monto con esas palabras.' : 'Probá con menos palabras o con la marca.');
+  if(soloFavs && pool.length===0) showEmpty('Todavía no marcaste favoritos','Abrí un producto y tocá "★ Favorito" para tenerlo a mano acá.');
+  else if(raw && results.length===0) showEmpty('Sin resultados', tope!=null ? 'No hay productos hasta ese monto con esas palabras.' : 'Probá con menos palabras o con la marca.');
 }
 /* de menor a mayor precio, con las presentaciones del mismo producto juntas */
 function ordenar(lista){
@@ -227,7 +321,10 @@ function more(){
 }
 function cardHTML(p){
   const promo = p.o?.length ? `<span class="promo">Promo${p.o[0][0]?' '+fmt.format(p.o[0][0]):''}</span>` : '';
+  const it = enLista(p.e);
+  const badges = (FAVS.has(p.e)?'<span class="badge star">★</span>':'') + (it?`<span class="badge">×${esc(it.n)}</span>`:'');
   return `<button class="card" data-e="${p.e}" data-s="${esc(p.s)}">
+    <div class="badges">${badges}</div>
     <div class="img">${imgHTML(p.e)}</div>
     <div class="body">
       <div class="desc">${esc(p.d)}</div>
@@ -270,6 +367,10 @@ function openDetail(p){
     </div>
     ${p.p!=null?`<div class="bigprice"><span class="price">${fmt.format(p.p)}</span>${ref}</div>`:''}
     ${promos}
+    ${p.p!=null?`<div class="actions">
+      <button class="btn primary" id="addl">${enLista(p.e)?'Sumar 1 más a la lista':'Agregar a la lista'}</button>
+      <button class="btn" id="fav" aria-pressed="${FAVS.has(p.e)}">★ Favorito</button>
+    </div>`:''}
     <div class="barcode"><svg id="bc"></svg></div>
     <div class="eanrow"><code>${p.e}</code><button class="btn" id="copy">Copiar código</button></div>
     ${p.p!=null?'<div class="hist" id="hist"></div>':''}`;
@@ -278,6 +379,8 @@ function openDetail(p){
     JsBarcode('#bc', p.e, {format:isEan13?'EAN13':'CODE128',width:2.4,height:110,fontSize:20,background:'#ffffff',lineColor:'#000000',margin:12});
   }catch{ $('#bc').outerHTML = '<p class="notfound">No se pudo dibujar este código.</p>'; }
   $('.sheet .close').onclick=()=>$('#dlg').close();
+  if($('#addl')) $('#addl').onclick=e=>{agregar(p);const it=enLista(p.e);e.target.textContent=`En la lista (×${it.n}) · sumar 1 más`;refrescarTarjeta(p.e)};
+  if($('#fav')) $('#fav').onclick=e=>{FAVS.has(p.e)?FAVS.delete(p.e):FAVS.add(p.e);saveFavs();e.target.setAttribute('aria-pressed',FAVS.has(p.e));refrescarTarjeta(p.e)};
   $('#copy').onclick=async e=>{
     try{await navigator.clipboard.writeText(p.e);e.target.textContent='Copiado'}catch{e.target.textContent='No se pudo copiar'}
   };
@@ -322,10 +425,124 @@ async function drawHistory(p){
   <div class="note">${fmt.format(v[0])} → ${fmt.format(v[v.length-1])} (${diff>=0?'+':''}${pct.toFixed(1)}%) · ${serie.length-1} cambio${serie.length-1===1?'':'s'}</div>`;
 }
 
+function refrescarTarjeta(e){
+  document.querySelectorAll(`.card[data-e="${e}"]`).forEach(c=>{
+    const p=ITEMS.find(x=>x.e===e && x.s===c.dataset.s); if(p) c.outerHTML=cardHTML(p);
+  });
+}
+
+/* ---------- hoja de la lista de compras ---------- */
+function abrirLista(){
+  const filas = LISTA.items.map((it,i)=>{
+    const {p, base, editado} = precioItem(it);
+    const nombre = it.e ? (p?.d || 'Producto que ya no figura en la base') : it.nom;
+    const det = it.e ? `${fmt.format(p?.p ?? it.u ?? 0)} c/u${p?'':' (último precio conocido)'}` : 'Agregado a mano';
+    return `<div class="li" data-i="${i}">
+      <div class="nom">${esc(nombre)}<small>${esc(det)}</small></div>
+      <div class="sub" data-sub>${fmt.format(subtotal(it))}</div>
+      <div class="ctrls">
+        <div class="fld"><span>Cantidad</span>
+          <div class="qty"><button data-a="menos" aria-label="Uno menos">−</button><input data-k="n" inputmode="decimal" value="${esc(it.n)}" aria-label="Cantidad"><button data-a="mas" aria-label="Uno más">+</button></div></div>
+        <label class="fld w-pct"><span>% desc.</span><input data-k="d" inputmode="decimal" placeholder="0" value="${esc(it.d)}"></label>
+        <label class="fld w-pr"><span>Precio c/u</span><input data-k="pr" inputmode="decimal" placeholder="${esc(fmt.format(it.e?(p?.p ?? it.u ?? 0):0).replace(/\s/g,''))}" value="${esc(it.pr)}" class="${editado&&it.e?'edit':''}"></label>
+        <button class="rm" data-a="rm">Quitar</button>
+      </div></div>`;
+  }).join('');
+  $('#sheet').innerHTML = `
+    <div class="head"><h2 id="dtitle">Lista de compras</h2><button class="close" aria-label="Cerrar">×</button></div>
+    <div class="lista" id="lista">${filas || '<p class="aviso">La lista está vacía. Abrí un producto y tocá "Agregar a la lista".</p>'}</div>
+    <div class="manual">
+      <label class="fld"><span>Agregar a mano</span><input id="mnom" placeholder="Producto que no está en la base"></label>
+      <label class="fld w-pr"><span>Precio</span><input id="mpr" inputmode="decimal" placeholder="$"></label>
+      <button class="btn" id="madd">Agregar</button>
+    </div>
+    <div class="tot">
+      <div class="row"><span>Subtotal</span><span id="tsub"></span></div>
+      <div class="row"><label class="fld"><span>% desc. general</span><input id="tdesc" class="w-pct" inputmode="decimal" placeholder="0" value="${esc(LISTA.desc)}"></label><span id="tahorro" class="aviso"></span></div>
+      <div class="row big"><span>Total</span><span id="ttot"></span></div>
+      <div class="row"><label class="fld"><span>Presupuesto</span><input id="tpresu" class="w-pr" inputmode="decimal" placeholder="opcional" value="${esc(LISTA.presu)}"></label><span id="tresto"></span></div>
+    </div>
+    <p class="aviso">Los precios en rojo los editaste vos. Si dejás el campo vacío, se usa el precio de la base.</p>
+    <div class="actions">
+      <button class="btn" id="lshare">Pasar a otro dispositivo</button>
+      <button class="btn" id="lvaciar">Vaciar lista</button>
+    </div>`;
+  pintarTotales();
+  $('.sheet .close').onclick=()=>$('#dlg').close();
+  const lista=$('#lista');
+  lista.addEventListener('input',e=>{
+    const inp=e.target.closest('input[data-k]'); if(!inp) return;
+    const row=inp.closest('.li'), it=LISTA.items[+row.dataset.i];
+    it[inp.dataset.k]=inp.value.trim();
+    if(inp.dataset.k==='pr' && it.e) inp.classList.toggle('edit', num(inp.value)!=null);
+    row.querySelector('[data-sub]').textContent=fmt.format(subtotal(it));
+    saveLista(); pintarTotales();
+  });
+  lista.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-a]'); if(!b) return;
+    const row=b.closest('.li'), it=LISTA.items[+row.dataset.i];
+    if(b.dataset.a==='rm'){ LISTA.items.splice(+row.dataset.i,1); saveLista(); abrirLista(); if(it.e) refrescarTarjeta(it.e); return; }
+    const q=Math.max(0,(num(it.n)??1)+(b.dataset.a==='mas'?1:-1));
+    it.n = String(Math.round(q*1000)/1000);
+    row.querySelector('input[data-k="n"]').value=it.n;
+    row.querySelector('[data-sub]').textContent=fmt.format(subtotal(it));
+    saveLista(); pintarTotales(); if(it.e) refrescarTarjeta(it.e);
+  });
+  $('#tdesc').oninput=e=>{LISTA.desc=e.target.value.trim();saveLista();pintarTotales()};
+  $('#tpresu').oninput=e=>{LISTA.presu=e.target.value.trim();saveLista();pintarTotales()};
+  $('#madd').onclick=()=>{
+    const nom=$('#mnom').value.trim(), pr=num($('#mpr').value);
+    if(!nom||pr==null){$('#mnom').focus();return}
+    LISTA.items.push({id:'m'+Date.now(), nom, n:1, d:'', pr:String(pr)}); saveLista(); abrirLista();
+  };
+  $('#lshare').onclick=e=>compartir(e.target);
+  $('#lvaciar').onclick=e=>{
+    if(e.target.dataset.ok){ const es=LISTA.items.map(i=>i.e); LISTA.items=[]; saveLista(); abrirLista(); es.forEach(x=>x&&refrescarTarjeta(x)); }
+    else { e.target.dataset.ok='1'; e.target.textContent='Tocá de nuevo para vaciar'; }
+  };
+  if(!$('#dlg').open) $('#dlg').showModal();
+}
+function pintarTotales(){
+  const {sub,total}=totales(); const pr=num(LISTA.presu);
+  $('#tsub').textContent=fmt.format(sub);
+  $('#ttot').textContent=fmt.format(total);
+  $('#tahorro').textContent = sub>total ? `ahorrás ${fmt.format(sub-total)}` : '';
+  const r=$('#tresto');
+  if(pr==null){r.textContent='';r.className=''}
+  else if(pr>=total){r.textContent=`te quedan ${fmt.format(pr-total)}`;r.className='ok'}
+  else {r.textContent=`te pasás por ${fmt.format(total-pr)}`;r.className='mal'}
+}
+
+/* ---------- pasar favoritos y lista a otro dispositivo (enlace) ---------- */
+function codificar(o){ return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function decodificar(t){ t=t.replace(/-/g,'+').replace(/_/g,'/'); return JSON.parse(decodeURIComponent(escape(atob(t)))); }
+async function compartir(btn){
+  const url = location.origin+location.pathname+'#s='+codificar({f:[...FAVS], l:LISTA});
+  try{ await navigator.clipboard.writeText(url); btn.textContent='Enlace copiado: abrilo en el otro dispositivo'; }
+  catch{ btn.textContent='Copiá este enlace:'; btn.insertAdjacentHTML('afterend',`<input class="fld" style="width:100%" readonly value="${esc(url)}" onclick="this.select()">`); }
+}
+function ofrecerImportar(t){
+  let o; try{ o=decodificar(t) }catch{ history.replaceState(null,'',location.pathname); return; }
+  const nf=(o.f||[]).length, nl=(o.l?.items||[]).length;
+  $('#sheet').innerHTML=`
+    <div class="head"><h2 id="dtitle">Traer datos de otro dispositivo</h2><button class="close" aria-label="Cerrar">×</button></div>
+    <p>Este enlace trae <b>${nf} favorito${nf===1?'':'s'}</b> y una lista de <b>${nl} producto${nl===1?'':'s'}</b>.</p>
+    <p class="aviso">Reemplaza los favoritos y la lista que tengas guardados en este navegador.</p>
+    <div class="actions"><button class="btn primary" id="imp">Traer</button><button class="btn" id="noimp">Cancelar</button></div>`;
+  const fin=()=>{history.replaceState(null,'',location.pathname);$('#dlg').close()};
+  $('.sheet .close').onclick=fin; $('#noimp').onclick=fin;
+  $('#imp').onclick=()=>{ FAVS=new Set(o.f||[]); saveFavs(); LISTA=Object.assign({items:[],desc:'',presu:''},o.l||{}); saveLista(); fin(); search(); };
+  $('#dlg').showModal();
+}
+
 /* ---------- eventos ---------- */
+$('#bar').onclick=abrirLista;
+$('#favf').onclick=e=>{soloFavs=!soloFavs;e.target.setAttribute('aria-pressed',soloFavs);search()};
+$('#share').onclick=e=>{compartir(e.target);setTimeout(()=>{e.target.textContent='Pasar a otro dispositivo'},4000)};
 let tmr;
 $('#q').addEventListener('input',()=>{clearTimeout(tmr);tmr=setTimeout(search,90)});
 $('#q').addEventListener('keydown',e=>{if(e.key==='Enter'){
+  e.preventDefault(); // si no, el mismo Enter activa el botón "cerrar" de la ficha recién abierta
   const q=$('#q').value.trim();
   if(/^\d{8,13}$/.test(q)) openByEan(q); else if(results.length===1) openDetail(results[0]);
 }});
