@@ -2,22 +2,16 @@ Consultando el portal oficial...
   intento 1/2 falló: curl: (22) The requested URL returned error: 403
   intento 2/2 falló: curl: (22) The requested URL returned error: 403
   el portal oficial no responde (curl: (22) The requested URL returned error: 403); uso el espejo
-Espejo: 2026-10-15  d076720f-a7f0-4af8-b1d6-1b99d5a90c14-revID-719c024d-ff0f-4efe-8e22-b378d764c1a0-sepa_jueves.zip-repackaged.tar.zst
-Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/d076720f-a7f0-4af8-b1d6-1b99d5a90c14-revID-719c024d-ff0f-4efe-8e22-b378d764c1a0-sepa_jueves.zip-repackaged.tar.zst
-  listo: 62 MB
-  15 carpetas con CSV y 1 zips en el paquete
+Espejo: 2026-10-17  b3c3da5d-213d-41e7-8d74-f23fda0a3c30-revID-f3a684ee-d1f8-4b87-abb0-f702577893b9-sepa_sabado.zip-repackaged.tar.zst
+Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/b3c3da5d-213d-41e7-8d74-f23fda0a3c30-revID-f3a684ee-d1f8-4b87-abb0-f702577893b9-sepa_sabado.zip-repackaged.tar.zst
+  listo: 63 MB
+  16 carpetas con CSV y 1 zips en el paquete
   cadena encontrada
   sucursales.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'sucursales_nombre', 'sucursales_tipo', 'sucursales_calle', 'sucursales_numero', 'sucursales_latitud', 'sucursales_longitud', 'sucursales_observaciones', 'sucursales_barrio', 'sucursales_codigo_postal', 'sucursales_localidad', 'sucursales_provincia', 'sucursales_lunes_horario_atencion', 'sucursales_martes_horario_atencion', 'sucursales_miercoles_horario_atencion', 'sucursales_jueves_horario_atencion', 'sucursales_viernes_horario_atencion', 'sucursales_sabado_horario_atencion', 'sucursales_domingo_horario_atencion']
   sucursales encontradas: 1
-  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1010735
-  productos de la sucursal: 5838  descartados: 44
-  historial: 0 cambios de precio registrados
-OK: 5838 productos guardados (2026-10-15)
+  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1014507
+  productos de la sucursal: 5797  descartados: 46
+  historial: 130 cambios de precio registrados
+OK: 5797 productos guardados (2026-10-17)
 
-Productos: 5838 · con foto: 5131 · a buscar hoy: 307 sin foto + 339 para refrescar
-  100/400 · encontradas 0
-  200/400 · encontradas 0
-  300/400 · encontradas 0
-  400/400 · encontradas 93
-Hoy: 93 encontradas de 400 búsquedas, 0 fotos cambiaron (3094 s, 2 errores de red)
-Cobertura total: 5131 de 5838 (88%)
+Las fotos ya se buscaron hoy; no se repite.
