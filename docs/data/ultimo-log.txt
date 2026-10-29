@@ -11,7 +11,13 @@ Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/1e92cd42-4
   sucursales encontradas: 1
   productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1013721
   productos de la sucursal: 5957  descartados: 47
-  historial: 284 cambios de precio registrados
+  historial: 0 cambios de precio registrados
 OK: 5957 productos guardados (2026-10-28)
 
-Las fotos ya se buscaron hoy; no se repite.
+Productos: 5957 · con foto: 5090 · a buscar hoy: 179 sin foto + 298 para refrescar
+  100/400 · encontradas 95
+  200/400 · encontradas 175
+  300/400 · encontradas 275
+  400/400 · encontradas 375
+Hoy: 375 encontradas de 400 búsquedas, 8 fotos cambiaron (1101 s, 0 errores de red)
+Cobertura total: 5244 de 5957 (88%)
