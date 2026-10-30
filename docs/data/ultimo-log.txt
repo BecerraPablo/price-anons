@@ -1,23 +1,21 @@
 Consultando el portal oficial...
-  intento 1/2 falló: curl: (22) The requested URL returned error: 403
-  intento 2/2 falló: curl: (22) The requested URL returned error: 403
-  el portal oficial no responde (curl: (22) The requested URL returned error: 403); uso el espejo
-Espejo: 2026-10-28  1e92cd42-4f94-4071-a165-62c4cb2ce23c-revID-c1e11108-0d88-4de3-9e06-b770afa8e249-sepa_miercoles.zip-repackaged.tar.zst
-Descargando https://f004.backblazeb2.com/file/precios-justos-datasets/1e92cd42-4f94-4071-a165-62c4cb2ce23c-revID-c1e11108-0d88-4de3-9e06-b770afa8e249-sepa_miercoles.zip-repackaged.tar.zst
-  listo: 62 MB
-  15 carpetas con CSV y 1 zips en el paquete
+  recurso: 2026-10-29  Precios SEPA Minoristas jueves, 2026-10-29
+  recurso: 2026-10-28  Precios SEPA Minoristas miercoles, 2026-10-28
+  recurso: 2026-10-27  Precios SEPA Minoristas martes, 2026-10-27
+  recurso: 2026-10-26  Precios SEPA Minoristas lunes, 2026-10-26
+  recurso: 2026-10-25  Precios SEPA Minoristas domingo, 2026-10-25
+  recurso: 2026-10-24  Precios SEPA Minoristas sabado, 2026-10-24
+  recurso: 2026-10-23  Precios SEPA Minoristas viernes, 2026-10-23
+Descargando https://datos.produccion.gob.ar/dataset/6f47ec76-d1ce-4e34-a7e1-621fe9b1d0b5/resource/d076720f-a7f0-4af8-b1d6-1b99d5a90c14/download/sepa_jueves.zip
+  listo: 309 MB
+  17 zips internos en sepa.zip
+  zip dañado, salteo: 2026-10-29/sepa_2_comercio-sepa-36_2026-10-29_01-05-07.zip
   cadena encontrada
   sucursales.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'sucursales_nombre', 'sucursales_tipo', 'sucursales_calle', 'sucursales_numero', 'sucursales_latitud', 'sucursales_longitud', 'sucursales_observaciones', 'sucursales_barrio', 'sucursales_codigo_postal', 'sucursales_localidad', 'sucursales_provincia', 'sucursales_lunes_horario_atencion', 'sucursales_martes_horario_atencion', 'sucursales_miercoles_horario_atencion', 'sucursales_jueves_horario_atencion', 'sucursales_viernes_horario_atencion', 'sucursales_sabado_horario_atencion', 'sucursales_domingo_horario_atencion']
   sucursales encontradas: 1
-  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1013721
-  productos de la sucursal: 5957  descartados: 47
-  historial: 0 cambios de precio registrados
-OK: 5957 productos guardados (2026-10-28)
+  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1015240
+  productos de la sucursal: 5957  descartados: 45
+  historial: 184 cambios de precio registrados
+OK: 5957 productos guardados (2026-10-29)
 
-Productos: 5957 · con foto: 5090 · a buscar hoy: 179 sin foto + 298 para refrescar
-  100/400 · encontradas 95
-  200/400 · encontradas 175
-  300/400 · encontradas 275
-  400/400 · encontradas 375
-Hoy: 375 encontradas de 400 búsquedas, 8 fotos cambiaron (1101 s, 0 errores de red)
-Cobertura total: 5244 de 5957 (88%)
+Las fotos ya se buscaron hoy; no se repite.
