@@ -1,26 +1,20 @@
 Consultando el portal oficial...
+  recurso: 2026-10-31  Precios SEPA Minoristas sabado, 2026-10-31
   recurso: 2026-10-30  Precios SEPA Minoristas viernes, 2026-10-30
   recurso: 2026-10-29  Precios SEPA Minoristas jueves, 2026-10-29
   recurso: 2026-10-28  Precios SEPA Minoristas miercoles, 2026-10-28
   recurso: 2026-10-27  Precios SEPA Minoristas martes, 2026-10-27
   recurso: 2026-10-26  Precios SEPA Minoristas lunes, 2026-10-26
   recurso: 2026-10-25  Precios SEPA Minoristas domingo, 2026-10-25
-  recurso: 2026-10-24  Precios SEPA Minoristas sabado, 2026-10-24
-Descargando https://datos.produccion.gob.ar/dataset/6f47ec76-d1ce-4e34-a7e1-621fe9b1d0b5/resource/91bc072a-4726-44a1-85ec-4a8467aad27e/download/sepa_viernes.zip
-  listo: 309 MB
-  14 zips internos en sepa.zip
+Descargando https://datos.produccion.gob.ar/dataset/6f47ec76-d1ce-4e34-a7e1-621fe9b1d0b5/resource/b3c3da5d-213d-41e7-8d74-f23fda0a3c30/download/sepa_sabado.zip
+  listo: 310 MB
+  17 zips internos en sepa.zip
   cadena encontrada
   sucursales.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'sucursales_nombre', 'sucursales_tipo', 'sucursales_calle', 'sucursales_numero', 'sucursales_latitud', 'sucursales_longitud', 'sucursales_observaciones', 'sucursales_barrio', 'sucursales_codigo_postal', 'sucursales_localidad', 'sucursales_provincia', 'sucursales_lunes_horario_atencion', 'sucursales_martes_horario_atencion', 'sucursales_miercoles_horario_atencion', 'sucursales_jueves_horario_atencion', 'sucursales_viernes_horario_atencion', 'sucursales_sabado_horario_atencion', 'sucursales_domingo_horario_atencion']
   sucursales encontradas: 1
-  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1016402
-  productos de la sucursal: 5918  descartados: 46
-  historial: 0 cambios de precio registrados
-OK: 5918 productos guardados (2026-10-30)
+  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1018071
+  productos de la sucursal: 5964  descartados: 49
+  historial: 31 cambios de precio registrados
+OK: 5964 productos guardados (2026-10-31)
 
-Productos: 5918 · con foto: 5204 · a buscar hoy: 360 sin foto + 331 para refrescar
-  100/400 · encontradas 0
-  200/400 · encontradas 5
-  300/400 · encontradas 7
-  400/400 · encontradas 47
-Hoy: 47 encontradas de 400 búsquedas, 6 fotos cambiaron (3374 s, 0 errores de red)
-Cobertura total: 5211 de 5918 (88%)
+Las fotos ya se buscaron hoy; no se repite.
