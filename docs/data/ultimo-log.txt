@@ -14,13 +14,7 @@ Descargando https://datos.produccion.gob.ar/dataset/6f47ec76-d1ce-4e34-a7e1-621f
   sucursales encontradas: 1
   productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1011615
   productos de la sucursal: 5930  descartados: 50
-  historial: 647 cambios de precio registrados
+  historial: 0 cambios de precio registrados
 OK: 5930 productos guardados (2026-11-02)
 
-Productos: 5930 · con foto: 5174 · a buscar hoy: 66 sin foto + 640 para refrescar
-  100/400 · encontradas 84
-  200/400 · encontradas 184
-  300/400 · encontradas 283
-  400/400 · encontradas 383
-Hoy: 383 encontradas de 400 búsquedas, 19 fotos cambiaron (1194 s, 3 errores de red)
-Cobertura total: 5224 de 5930 (88%)
+Las fotos ya se buscaron hoy; no se repite.
