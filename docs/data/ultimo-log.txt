@@ -1,21 +1,21 @@
 Consultando el portal oficial...
+  recurso: 2026-11-10  Precios SEPA Minoristas martes, 2026-11-10
   recurso: 2026-11-09  Precios SEPA Minoristas lunes, 2026-11-09
   recurso: 2026-11-08  Precios SEPA Minoristas domingo, 2026-11-08
   recurso: 2026-11-07  Precios SEPA Minoristas sabado, 2026-11-07
   recurso: 2026-11-06  Precios SEPA Minoristas viernes, 2026-11-06
   recurso: 2026-11-05  Precios SEPA Minoristas jueves, 2026-11-05
   recurso: 2026-11-04  Precios SEPA Minoristas miercoles, 2026-11-04
-  recurso: 2026-11-03  Precios SEPA Minoristas martes, 2026-11-03
-Descargando https://datos.produccion.gob.ar/dataset/6f47ec76-d1ce-4e34-a7e1-621fe9b1d0b5/resource/0a9069a9-06e8-4f98-874d-da5578693290/download/sepa_lunes.zip
-  listo: 314 MB
-  16 zips internos en sepa.zip
-  zip dañado, salteo: 2026-11-09/sepa_2_comercio-sepa-36_2026-11-09_01-05-07.zip
+Descargando https://datos.produccion.gob.ar/dataset/6f47ec76-d1ce-4e34-a7e1-621fe9b1d0b5/resource/9dc06241-cc83-44f4-8e25-c9b1636b8bc8/download/sepa_martes.zip
+  listo: 299 MB
+  17 zips internos en sepa.zip
+  zip dañado, salteo: 2026-11-10/sepa_2_comercio-sepa-36_2026-11-10_01-05-08.zip
   cadena encontrada
   sucursales.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'sucursales_nombre', 'sucursales_tipo', 'sucursales_calle', 'sucursales_numero', 'sucursales_latitud', 'sucursales_longitud', 'sucursales_observaciones', 'sucursales_barrio', 'sucursales_codigo_postal', 'sucursales_localidad', 'sucursales_provincia', 'sucursales_lunes_horario_atencion', 'sucursales_martes_horario_atencion', 'sucursales_miercoles_horario_atencion', 'sucursales_jueves_horario_atencion', 'sucursales_viernes_horario_atencion', 'sucursales_sabado_horario_atencion', 'sucursales_domingo_horario_atencion']
   sucursales encontradas: 1
-  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1011108
-  productos de la sucursal: 5935  descartados: 51
-  historial: 0 cambios de precio registrados
-OK: 5935 productos guardados (2026-11-09)
+  productos.csv columnas: ['id_comercio', 'id_bandera', 'id_sucursal', 'id_producto', 'productos_ean', 'productos_descripcion', 'productos_cantidad_presentacion', 'productos_unidad_medida_presentacion', 'productos_marca', 'productos_precio_lista', 'productos_precio_referencia', 'productos_cantidad_referencia', 'productos_unidad_medida_referencia', 'productos_precio_unitario_promo1', 'productos_leyenda_promo1', 'productos_precio_unitario_promo2', 'productos_leyenda_promo2']  filas totales: 1006876
+  productos de la sucursal: 5870  descartados: 52
+  historial: 28 cambios de precio registrados
+OK: 5870 productos guardados (2026-11-10)
 
 Las fotos ya se buscaron hoy; no se repite.
